@@ -1,3 +1,4 @@
+import pandas
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
@@ -22,6 +23,7 @@ class Predictor:
         self.inputDatas = self._featureScaling_(datas_)
         self._weight_ = np.random.rand(self.inputDatas.shape[1], 1)
         self._out_ = np.zeros((inputDatas.shape[0], 1))
+        self.m = self.inputDatas.shape[0]
         # print('weight:\n', self._weight_)
 
     def getResult(self, inputDatas):
@@ -41,7 +43,7 @@ class Predictor:
             column = inputDatas[:, i]
             s = np.max(column) - np.min(column)
             self._columns_s.append(s)
-            scaling = self._scaling(column, self._columns_average[i], s)
+            scaling = self._scaling(column, self._columns_average[0, i], s)
             inputDatas[:, i] = scaling
         return inputDatas
 
@@ -50,27 +52,20 @@ class Predictor:
 
     def train(self):
         for i in range(self.times):
-            self._trainOnce()
-
-    def _trainOnce(self):
-        for i, data in enumerate(zip(self.lables, self.inputDatas)):
-            self._caculate(i, data[0], data[1])
-
-        self._updateWeight()
-
-    def _caculate(self, index, lable, data):
-        self._out_[index][0] = np.sum(np.dot(data, self._weight_))
-        # print('out:', self._out_[index][0])
+            self._out_ = np.dot(self.inputDatas, self._weight_)
+            self._updateWeight()
+        print('weight:', self._weight_)
 
     def _updateWeight(self):
         # 根据梯度下降公式得到修正w
-        self._weight_ = self._weight_ + self.rate * np.dot(np.transpose(self.inputDatas), (self.lables - self._out_))
+        self._weight_ = self._weight_ + self.rate * np.dot(np.transpose(self.inputDatas),
+                                                           (self.lables - self._out_)) / self.m
         self._outs_.append(self._out_)
         self._out_ = np.zeros((self.inputDatas.shape[0], 1))
         # print('weight:', self._weight_)
 
     # 显示2d变化轨迹图
-    def show(self, save=False):
+    def show(self, inputs, save=False):
         fig, ax = plt.subplots()
         fig.set_tight_layout(True)
         #  询问图形在屏幕上的尺寸和DPI（每英寸点数）。
@@ -78,16 +73,15 @@ class Predictor:
         print('fig size: {0} DPI, size in inches {1}'.format(
                 fig.get_dpi(), fig.get_size_inches()))
 
+        ax.scatter(inputs, self.lables)
         # 画出一个维持不变（不会被重画）的散点图和一开始的那条直线。
-        x = np.arange(0, 20, 0.1)
-        ax.scatter(self.inputDatas, self.lables)
-        line, = ax.plot(self.inputDatas, self._outs_[0], 'r-', linewidth=2)
+        line, = ax.plot(inputs, self._outs_[0], 'r-', linewidth=2)
 
         def update(i):
             label = 'train {0} time'.format(i - 1)
             # 更新直线和x轴（用一个新的x轴的标签）。
             # 用元组（Tuple）的形式返回在这一帧要被重新绘图的物体
-            line.set_ydata(self._outs_[i - 1])
+            line.set_ydata(self._outs_[i])
             ax.set_xlabel(label)
             return line, ax
 
@@ -102,43 +96,22 @@ class Predictor:
 
 if __name__ == '__main__':
     start = datetime.datetime.utcnow().timestamp()
-    # predicotor2 = Predictor(np.array([[1], [2], [3], [4]]), np.array([[1, 2], [2, 3], [3, 4], [4, 5]]), 1000,
-    #                         0.01)
-    # predicotor2.train()
-    # print(predicotor2.getResult(np.array([1, 2])))
-
-    predicotor1 = Predictor(np.array([[460], [232], [315], [178]]),
-                            np.array([[2104, 5, 1, 45], [1416, 3, 2, 40], [1534, 3, 2, 30], [852, 2, 1, 36]]), 1000,
-                            0.03)
-    predicotor1.train()
-    # print(predicotor1.getResult(np.array([2104, 5, 1, 45])))
-    # print(predicotor1.getResult(np.array([1416, 3, 2, 40])))
-    # print(predicotor1.getResult(np.array([1534, 3, 2, 30])))
-    # print(predicotor1.getResult(np.array([852, 2, 1, 36])))
-
-    print(predicotor1._weight_)
-    # predicotor1 = Predictor(np.array([[1], [2], [3], [4]]), np.array([[1], [2], [3], [4]]), 500,
+    # inputs = np.array([[1], [2], [3], [4]])
+    # lables = np.array([[1], [2], [3], [4]])
+    # predicotor1 = Predictor(inputs, lables, 500,
     #                         0.03)
     # predicotor1.train()
     # print(predicotor1.getResult(np.array([1])))
     # print(predicotor1.getResult(np.array([2])))
     # print(predicotor1.getResult(np.array([3])))
     # print(predicotor1.getResult(np.array([4])))
-
+    #
+    ex1Data = pandas.read_csv('ex1data1.txt')
+    inputs = np.transpose(np.matrix(ex1Data['x']))
+    lables = np.transpose(np.matrix(ex1Data['y']))
+    predicotor1 = Predictor(lables, inputs, 1000,
+                            0.1)
+    predicotor1.train()
     end = datetime.datetime.utcnow().timestamp()
     print('time:', end - start)
-    # predicotor1.show()
-
-
-    # array = np.array([[1, 2], [2, 3], [3, 4], [4, 6]])
-    # print(array)
-    # average = np.mean(array, axis=0)
-    # print(average)
-    # newArray = []
-    # for i in range(array.shape[1]):
-    #     column = array[:, i]
-    #     column_max = np.max(column)-np.min(column)
-    #     column = (column - average[i]) / np.max(column)-np.min(column)
-    #     newArray.append(np.array(column))
-    # array = np.transpose(np.array(newArray))
-    # print(array)
+    predicotor1.show(inputs)
