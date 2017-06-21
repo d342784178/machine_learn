@@ -61,7 +61,7 @@ class Predictor:
         #  询问图形在屏幕上的尺寸和DPI（每英寸点数）。
         #  注意当我们把图形储存成一个文件时，我们需要再另外提供一个DPI值
         print('fig size: {0} DPI, size in inches {1}'.format(
-            fig.get_dpi(), fig.get_size_inches()))
+                fig.get_dpi(), fig.get_size_inches()))
 
         ax.scatter(np.transpose(inputs[:, 0]).tolist(), np.transpose(self.y[:, 0]).tolist())
         # 画出一个维持不变（不会被重画）的散点图和一开始的那条直线。
