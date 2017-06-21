@@ -1,4 +1,3 @@
-import pandas
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
@@ -9,9 +8,9 @@ from matplotlib.animation import FuncAnimation
 
 # y=wx, w,x皆为向量,且x0=1
 class Predictor:
-    def __init__(self, lables, inputDatas, times, rate):
-        self.lables = lables
-        self.inputDatas = inputDatas
+    def __init__(self, y, x, times, rate):
+        self.y = y
+        self.x = x
         self.times = times
         self.rate = rate
 
@@ -19,10 +18,10 @@ class Predictor:
         self._columns_average = []
         self._columns_s = []
         # 增加一列x0=1
-        datas_ = np.c_[np.ones((inputDatas.shape[0], 1)), self.inputDatas]
-        self.inputDatas = self._featureScaling_(datas_)
-        self._weight_ = np.random.rand(self.inputDatas.shape[1], 1)
-        self.m = self.inputDatas.shape[0]
+        datas_ = np.c_[np.ones((x.shape[0], 1)), self.x]
+        self.x = self._featureScaling_(datas_)
+        self.theta = np.random.rand(self.x.shape[1], 1)
+        self.m = self.x.shape[0]
         # print('weight:\n', self._weight_)
 
     def getResult(self, inputDatas):
@@ -33,7 +32,7 @@ class Predictor:
         for i in range(data.shape[1]):
             i_ = data[:, i]
             data[:, i] = self._scaling(i_, self._columns_average[i], self._columns_s[i])
-        return np.sum(np.dot(data, self._weight_))
+        return np.sum(np.dot(data, self.theta))
 
     # 特征缩放
     def _featureScaling_(self, inputDatas):
@@ -51,15 +50,14 @@ class Predictor:
 
     def train(self):
         for i in range(self.times):
-            _out_ = np.zeros((self.inputDatas.shape[0], 1))
-            _out_ = np.dot(self.inputDatas, self._weight_)
-            self._updateWeight(_out_)
-        print('weight:', self._weight_)
+            out = np.dot(self.x, self.theta)
+            self._updateWeight(out)
+        print('weight:', self.theta)
 
     def _updateWeight(self, out):
         # 根据梯度下降公式得到修正w
-        self._weight_ = self._weight_ + self.rate * np.dot(np.transpose(self.inputDatas),
-                                                           (self.lables - out)) / self.m
+        self.theta = self.theta + self.rate * np.dot(np.transpose(self.x),
+                                                     (self.y - out)) / self.m
         self._outs_.append(out)
         # print('weight:', self._weight_)
 
@@ -72,7 +70,7 @@ class Predictor:
         print('fig size: {0} DPI, size in inches {1}'.format(
             fig.get_dpi(), fig.get_size_inches()))
 
-        ax.scatter(np.transpose(inputs[:, 0]).tolist(), np.transpose(self.lables[:, 0]).tolist())
+        ax.scatter(np.transpose(inputs[:, 0]).tolist(), np.transpose(self.y[:, 0]).tolist())
         # 画出一个维持不变（不会被重画）的散点图和一开始的那条直线。
         line, = ax.plot(inputs, self._outs_[0], 'r-', linewidth=2)
 
@@ -105,11 +103,11 @@ if __name__ == '__main__':
     # print(predicotor1.getResult(np.array([3])))
     # print(predicotor1.getResult(np.array([4])))
     #
-    ex1Data = pandas.read_csv('ex1data1.txt')
-    inputs = np.transpose(np.matrix(ex1Data['x']))
-    lables = np.transpose(np.matrix(ex1Data['y']))
+    ex1Data = np.loadtxt('ex1data1.txt', delimiter=',')
+    inputs = np.transpose(np.matrix(ex1Data[:, 0]))
+    lables = np.transpose(np.matrix(ex1Data[:, 1]))
     predicotor1 = Predictor(lables, inputs, 1000,
-                            0.1)
+                            0.15)
     predicotor1.train()
     end = datetime.datetime.utcnow().timestamp()
     print('time:', end - start)
