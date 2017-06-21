@@ -22,7 +22,6 @@ class Predictor:
         datas_ = np.c_[np.ones((inputDatas.shape[0], 1)), self.inputDatas]
         self.inputDatas = self._featureScaling_(datas_)
         self._weight_ = np.random.rand(self.inputDatas.shape[1], 1)
-        self._out_ = np.zeros((inputDatas.shape[0], 1))
         self.m = self.inputDatas.shape[0]
         # print('weight:\n', self._weight_)
 
@@ -52,16 +51,16 @@ class Predictor:
 
     def train(self):
         for i in range(self.times):
-            self._out_ = np.dot(self.inputDatas, self._weight_)
-            self._updateWeight()
+            _out_ = np.zeros((self.inputDatas.shape[0], 1))
+            _out_ = np.dot(self.inputDatas, self._weight_)
+            self._updateWeight(_out_)
         print('weight:', self._weight_)
 
-    def _updateWeight(self):
+    def _updateWeight(self, out):
         # 根据梯度下降公式得到修正w
         self._weight_ = self._weight_ + self.rate * np.dot(np.transpose(self.inputDatas),
-                                                           (self.lables - self._out_)) / self.m
-        self._outs_.append(self._out_)
-        self._out_ = np.zeros((self.inputDatas.shape[0], 1))
+                                                           (self.lables - out)) / self.m
+        self._outs_.append(out)
         # print('weight:', self._weight_)
 
     # 显示2d变化轨迹图
@@ -71,9 +70,9 @@ class Predictor:
         #  询问图形在屏幕上的尺寸和DPI（每英寸点数）。
         #  注意当我们把图形储存成一个文件时，我们需要再另外提供一个DPI值
         print('fig size: {0} DPI, size in inches {1}'.format(
-                fig.get_dpi(), fig.get_size_inches()))
+            fig.get_dpi(), fig.get_size_inches()))
 
-        ax.scatter(inputs, self.lables)
+        ax.scatter(np.transpose(inputs[:, 0]).tolist(), np.transpose(self.lables[:, 0]).tolist())
         # 画出一个维持不变（不会被重画）的散点图和一开始的那条直线。
         line, = ax.plot(inputs, self._outs_[0], 'r-', linewidth=2)
 
