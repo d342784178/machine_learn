@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 
 
-# 梯度下降法 使用矩阵
+# 梯度下降法 特征缩放 正化
 
 # y=wx, w,x皆为向量,且x0=1
 class Predictor:
@@ -13,6 +13,7 @@ class Predictor:
         self.x = x
         self.times = times
         self.rate = rate
+        self.lmd = 1
 
         self._outs_ = []
         self._columns_average = []
@@ -56,8 +57,8 @@ class Predictor:
 
     def _updateWeight(self, out):
         # 根据梯度下降公式得到修正w
-        self.theta = self.theta + self.rate * np.dot(np.transpose(self.x),
-                                                     (self.y - out)) / self.m
+        self.theta = self.theta * (1 - self.rate * self.lmd / self.m) + self.rate * np.dot(np.transpose(self.x),
+                                                                                           (self.y - out)) / self.m
         self._outs_.append(out)
         # print('weight:', self._weight_)
 
