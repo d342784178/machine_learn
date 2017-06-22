@@ -12,17 +12,17 @@ class Predictor:
     def __init__(self, y, x, times, rate):
         self.y = y
         self.x = x
-        self.times = times
-        self.rate = rate
+        self.times = times  # 训练次数
+        self.rate = rate  # 学习速率
 
         self._outs_ = []
-        self.mu = []
-        self.sigma = []
+        self.mu = []  # 平均值
+        self.sigma = []  # 标准差
         # 增加一列x0=1
         self.x = self._featureScaling_(x)
         self.x = np.c_[np.ones((self.x.shape[0], 1)), self.x]
         self.theta = np.zeros([self.x.shape[1], 1])
-        self.m = self.x.shape[0]
+        self.m = self.x.shape[0]  # 输入纬度
         # print('weight:\n', self._weight_)
 
     def getResult(self, inputDatas):
