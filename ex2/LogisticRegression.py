@@ -3,6 +3,7 @@ import datetime
 import matplotlib.pyplot as plt
 from numpy.matlib import repmat
 import math
+from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 
 # 梯度下降法 特征缩放
@@ -20,11 +21,12 @@ class Predictor:
         self.x = x
         self.times = times
         self.rate = rate
+        self.lmd = 1
 
         self.mu = []
         self.sigma = []
         # 增加一列x0=1
-        self.x, self.mu, self.sigma = self._featureScaling_(x)
+        # self.x, self.mu, self.sigma = self._featureScaling_(x)
         self.x = np.c_[np.ones((self.x.shape[0], 1)), self.x]
         self.theta = np.zeros([self.x.shape[1], 1])
         self.m = self.x.shape[0]
@@ -33,7 +35,7 @@ class Predictor:
     def getResult(self, inputDatas):
         inputDatas.astype('float64')
         # 特征缩放
-        inputDatas = (inputDatas - self.mu) / self.sigma
+        # inputDatas = (inputDatas - self.mu) / self.sigma
         data = np.c_[np.ones([inputDatas.shape[0], 1]), inputDatas].astype('float64')
         return np.dot(data, self.theta)
 
@@ -52,42 +54,51 @@ class Predictor:
         print('theta:', self.theta)
 
     def costFunction(self, h):
-        cost = -(1 / self.m * np.sum(np.log(h).T.dot(self.y) + np.log(1 - h).T.dot(1 - self.y)))
+        cost = -(1 / self.m * np.sum(np.log(h).T.dot(self.y) + np.log(1 - h).T.dot(1 - self.y))) + self.lmd / (
+            2 * self.m) * np.sum(np.square(self.theta))
         print('cost', cost)
         pass
 
     def _updateWeight(self, h):
         # 根据梯度下降公式修正theta
-        grad = self.x.T.dot((h - self.y)) / self.m
+        grad = self.x.T.dot((h - self.y)) / self.m + self.lmd / self.m * self.theta
+        grad[0, 0] -= self.lmd / self.m * self.theta[0, 0]
         self.theta -= self.rate * grad
         print('grad', grad)
         # print('weight:', self._weight_)
 
 
+def mapFeature(x1, x2):
+    degree = 7
+    out = np.ones([1, 28])
+    for i in range(degree):
+        for j in range(i):
+            out[0, i * 7 + j] = x1 ^ (i - j) * x2 ^ j
+    return out
+
+
 if __name__ == '__main__':
-    loadtxt = np.loadtxt('ex2data1.txt', delimiter=',')
+    loadtxt = np.loadtxt('ex2data2.txt', delimiter=',')
     zero = np.where(loadtxt == 0)[0]
     one = np.where(loadtxt == 1)[0]
     plt.plot(loadtxt[zero][:, 0], loadtxt[zero][:, 1], 'r+')
     plt.plot(loadtxt[one][:, 0], loadtxt[one][:, 1], 'b.')
-    # plt.show()
     Y = np.transpose(np.matrix(loadtxt[:, 2]))
     X = np.matrix(loadtxt[:, 0:2])
-    predictor = Predictor(Y, X, 1000, 0.1)
+    predictor = Predictor(Y, X, 1000, 0.05)
     predictor.train()
-    print('result', sigmoid(predictor.getResult(np.matrix([45, 85]))))
-    # ys = []
-    # for i in predictor._featureScaling_(np.matrix(loadtxt[:, 0]).T)[0]:
-    #     ys.append((predictor.theta.T[0, 0] + predictor.theta.T[0, 1] * i[0, 0]) / -predictor.theta.T[0, 2])
-    #
-    # print(ys)
-    # # print(x)
-    # sigma_ = np.matrix(ys).T * predictor.mu[0, 1] + predictor.sigma[0, 1]
-    # print(sigma_.T)
-    # plt.plot(loadtxt[:, 0], sigma_)
-    plot_x = (np.matrix([np.min(X[:, 1]) - 2, np.max(X[:, 1]) + 2]) - predictor.sigma[0, 0]) / predictor.mu[0, 0]
-    print([np.min(X[:, 1]) - 2, np.max(X[:, 1]) + 2])
-    plot_y = (-1. / predictor.theta[2]) * (predictor.theta[1] * (plot_x) + predictor.theta[0])
-    print(plot_y * predictor.mu[0, 1] + predictor.sigma[0, 1])
-    plt.plot([28.60326323428011, 100.86943574220611], [-21.54564318, -100.55773148])
+
+    # 绘制决策边界
+    x1Min = X[:, 0].min()
+    x1Max = X[:, 0].max()
+    x2Min = X[:, 1].min()
+    x2Max = X[:, 1].max()
+    xx1, xx2 = np.meshgrid(np.linspace(x1Min, x1Max),
+                           np.linspace(x2Min, x2Max))
+    ploy = StandardScaler()
+    transform = ploy.fit_transform(np.c_[xx1.ravel(), xx2.ravel()])
+    h = sigmoid(np.c_[np.ones([transform.shape[0], 1]), transform].dot(predictor.theta))
+    h = h.reshape(xx1.shape)
+    #TODO 画出图像
+    plt.contour(xx1, xx2, h, [0.5], colors='b', linewidth=.5)
     plt.show()
