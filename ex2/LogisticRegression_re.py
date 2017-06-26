@@ -2,7 +2,6 @@ import numpy as np
 import datetime
 import matplotlib.pyplot as plt
 from numpy.matlib import repmat
-import math
 from sklearn.preprocessing import PolynomialFeatures, StandardScaler
 
 
