@@ -26,9 +26,9 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
     for ii in range(m):
         Y[ii, y[ii, 0] - 1] = 1
     # 向前推导
-    theta_1 = np.matrix(theta[0:hidden_layer_size * (input_layer_size + 1)]).reshape(
+    theta_1 = np.matrix(theta[0, 0:hidden_layer_size * (input_layer_size + 1)]).reshape(
         hidden_layer_size, (input_layer_size + 1))
-    theta_2 = np.matrix(theta[hidden_layer_size * (input_layer_size + 1)::]).reshape(
+    theta_2 = np.matrix(theta[0, hidden_layer_size * (input_layer_size + 1)::]).reshape(
         out_layer_size, (hidden_layer_size + 1))
 
     a1 = X
@@ -66,7 +66,7 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
     # theta_2的梯度
     J_grad_2 = 1 / m * Delta_2 + lmd / m * Telta_2_temp
 
-    J_grad = np.r_[J_grad_1.ravel().T, J_grad_2.ravel().T].T
+    J_grad = np.c_[J_grad_1.ravel(), J_grad_2.ravel()]
     return J, J_grad
 
 
@@ -92,16 +92,16 @@ def checkGradient(lmd):
     Theta2 = initTheta(hidden_layer_size, out_layer_size)
     X = debugInitWeight(m, input_layer_size)
     y = (np.ones([m, 1]) * out_layer_size).astype('int32')
-    # costFunc = cost(X, y, Theta1, Theta2, input_layer_size, hidden_layer_size, out_layer_size, m, lmd)
-    theta = np.r_[Theta1.ravel().T, Theta2.ravel().T]
+
+    theta = np.matrix(np.r_[Theta1.ravel().T, Theta2.ravel().T])
 
     espilon = 1e-4
-    gradApprox = np.zeros([1, theta.shape[0]])
-    for i in range(theta.shape[0]):
-        left = np.array(theta)
-        right = np.array(theta)
-        left[i] = theta[i] + espilon
-        right[i] = theta[i] - espilon
+    gradApprox = np.zeros([1, theta.shape[1]])
+    for i in range(theta.shape[1]):
+        left = np.matrix(theta)
+        right = np.matrix(theta)
+        left[0, i] = theta[0, i] + espilon
+        right[0, i] = theta[0, i] - espilon
         cost_left, grad_left = costFunction(np.matrix(X), y, left, input_layer_size, hidden_layer_size, out_layer_size,
                                             m, lmd)
         cost_right, grad_right = costFunction(np.matrix(X), y, right, input_layer_size, hidden_layer_size,
@@ -111,9 +111,11 @@ def checkGradient(lmd):
         gradApprox[0, i] = espilon_
         # print(espilon_)
     cost, grad = costFunction(np.matrix(X), y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd)
-    # print(gradApprox - grad)
+    print(gradApprox)
+    print(grad)
+    print(gradApprox - grad)
     delta = np.sum(np.square(gradApprox - grad))
-    # print(delta)
+    print(delta)
     return delta < 1e-9
 
 
@@ -130,7 +132,7 @@ if __name__ == '__main__':
     data2 = sio.loadmat('ex4weights.mat')
     theta_1 = data2['Theta1']
     theta_2 = data2['Theta2']
-    theta = np.r_[theta_1.ravel().T, theta_2.ravel().T]
+    theta = np.matrix(np.r_[theta_1.ravel(), theta_2.ravel()])
 
     image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
     # image.show()
@@ -139,11 +141,11 @@ if __name__ == '__main__':
     hidden_layer_size = 25
     out_layer_size = 10
 
-    J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
-                           out_layer_size, m, lmd=1)
+    # J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+    #                        out_layer_size, m, lmd=1)
     # print(J)
     # print(grad)
-    rate = 0.001
+    rate = 0.03
     trainTimes = 1000
     for i in range(trainTimes):
         J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
