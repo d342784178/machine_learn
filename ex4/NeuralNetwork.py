@@ -50,16 +50,20 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
         a_2 = np.r_[np.ones([1, 1]), a_2]
         a_3 = sigmoid(theta_2.dot(a_2))
 
+        # 输出层 误差项
         delta_3 = a_3 - np.matrix(Y[ii, :]).T
+        # 隐藏层 误差项
         delta_2 = np.multiply(theta_2.T.dot(delta_3)[1::, :],
                               sigmoidGradient(theta_1.dot(a_1)))
+
         Delta_2 += delta_3.dot(a_2.T)
         Delta_1 += delta_2.dot(a_1.T)
-
-    # TODO 梯度有问题
-    Telta_1_temp = np.c_[np.ones([theta_1.shape[0], 1]), theta_1[:, 1::]]
-    Telta_2_temp = np.c_[np.ones([theta_2.shape[0], 1]), theta_2[:, 1::]]
+    # 正规化
+    Telta_1_temp = np.c_[np.zeros([theta_1.shape[0], 1]), theta_1[:, 1::]]
+    Telta_2_temp = np.c_[np.zeros([theta_2.shape[0], 1]), theta_2[:, 1::]]
+    # theta_1的梯度
     J_grad_1 = 1 / m * Delta_1 + lmd / m * Telta_1_temp
+    # theta_2的梯度
     J_grad_2 = 1 / m * Delta_2 + lmd / m * Telta_2_temp
 
     J_grad = np.r_[J_grad_1.ravel().T, J_grad_2.ravel().T].T
