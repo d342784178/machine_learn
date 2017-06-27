@@ -67,7 +67,7 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
     J_grad_2 = 1 / m * Delta_2 + lmd / m * Telta_2_temp
 
     J_grad = np.c_[J_grad_1.ravel(), J_grad_2.ravel()]
-    return J, J_grad
+    return J, J_grad, a3
 
 
 def initTheta(l_in, l_out):
@@ -102,15 +102,17 @@ def checkGradient(lmd):
         right = np.matrix(theta)
         left[0, i] = theta[0, i] + espilon
         right[0, i] = theta[0, i] - espilon
-        cost_left, grad_left = costFunction(np.matrix(X), y, left, input_layer_size, hidden_layer_size, out_layer_size,
-                                            m, lmd)
-        cost_right, grad_right = costFunction(np.matrix(X), y, right, input_layer_size, hidden_layer_size,
-                                              out_layer_size, m,
-                                              lmd)
+        cost_left, grad_left, result_left = costFunction(np.matrix(X), y, left, input_layer_size, hidden_layer_size,
+                                                         out_layer_size,
+                                                         m, lmd)
+        cost_right, grad_right, result_right = costFunction(np.matrix(X), y, right, input_layer_size, hidden_layer_size,
+                                                            out_layer_size, m,
+                                                            lmd)
         espilon_ = (cost_left - cost_right) / (2 * espilon)
         gradApprox[0, i] = espilon_
         # print(espilon_)
-    cost, grad = costFunction(np.matrix(X), y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd)
+    cost, grad, result = costFunction(np.matrix(X), y, theta, input_layer_size, hidden_layer_size, out_layer_size, m,
+                                      lmd)
     print(gradApprox)
     print(grad)
     print(gradApprox - grad)
@@ -134,23 +136,25 @@ if __name__ == '__main__':
     theta_2 = data2['Theta2']
     theta = np.matrix(np.r_[theta_1.ravel(), theta_2.ravel()])
 
-    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
-    # image.show()
-
     input_layer_size = 400
     hidden_layer_size = 25
     out_layer_size = 10
 
-    # J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+    # J, grad ,result= costFunction(X, y, theta, input_layer_size, hidden_layer_size,
     #                        out_layer_size, m, lmd=1)
     # print(J)
     # print(grad)
-    rate = 0.03
+    rate = 0.1
     trainTimes = 1000
     for i in range(trainTimes):
-        J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
-                               out_layer_size, m, lmd=1)
+        J, grad, result = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+                                       out_layer_size, m, lmd=1)
         print('J', J)
         theta -= rate * grad
 
     print(theta)
+    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
+    image.show()
+    J, grad, result = costFunction(X[1000, :], y, theta, input_layer_size, hidden_layer_size,
+                                   out_layer_size, m, lmd=1)
+    print(result)
