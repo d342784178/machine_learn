@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from numpy.matlib import repmat
 import scipy.io as sio
 from PIL import Image as img
+from scipy.optimize import fmin_tnc
 
 
 def sigmoid(z):
@@ -31,6 +32,7 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
     theta_2 = np.matrix(theta[0, hidden_layer_size * (input_layer_size + 1)::]).reshape(
             out_layer_size, (hidden_layer_size + 1))
 
+    X = X.reshape(m, input_layer_size)
     a1 = X
     a2 = sigmoid(np.c_[np.ones([m, 1]), a1].dot(theta_1.T))
     a3 = sigmoid(np.c_[np.ones([m, 1]), a2].dot(theta_2.T))
@@ -120,8 +122,8 @@ def checkGradient(lmd):
 
 
 if __name__ == '__main__':
-    gradient = checkGradient(1)
-    print('梯度检验成功' if gradient else '梯度检验失败')
+    # gradient = checkGradient(1)
+    # print('梯度检验成功' if gradient else '梯度检验失败')
 
     input_layer_size = 400
     hidden_layer_size = 25
@@ -143,21 +145,22 @@ if __name__ == '__main__':
     # image.show()
 
 
-    # J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
-    #                        out_layer_size, m, lmd=1)
+    # J, grad, result = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+    #                                out_layer_size, m, lmd=1)
     # print(J)
     # print(grad)
-    rate = 0.05
+    rate = 0.08
     trainTimes = 1000
     for i in range(trainTimes):
         J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
                                out_layer_size, m, lmd=1)
         print('J', J)
         theta -= rate * grad
-
+        sio.savemat('/Users/mic/PycharmProjects/machineLearn/ex4/theta.mat', {'theat': theta})
     print(theta)
-    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
-    image.show()
-    J, grad, result = costFunction(X[1000, :], y, theta, input_layer_size, hidden_layer_size,
-                                   out_layer_size, m, lmd=1)
-    print(result)
+    # tnc = fmin_tnc(costFunction, x0=X, args=(y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, 1),
+    #                approx_grad=True, epsilon=1e-4, )
+    # print(tnc)
+    sio.savemat('/Users/mic/PycharmProjects/machineLearn/ex4/theta.mat', {'theat': theta})
+    # image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
+    # image.show()
