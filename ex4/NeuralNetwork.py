@@ -111,34 +111,44 @@ def checkGradient(lmd):
         gradApprox[0, i] = espilon_
         # print(espilon_)
     cost, grad = costFunction(np.matrix(X), y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd)
-    # print(grad)
-    # print(gradApprox)
-    print(gradApprox - grad)
+    # print(gradApprox - grad)
     delta = np.sum(np.square(gradApprox - grad))
-    print(delta)
+    # print(delta)
     return delta < 1e-9
 
 
 if __name__ == '__main__':
-    # data1 = sio.loadmat('ex4data1.mat')
-    # X = np.matrix(data1['X'])
-    # y = np.matrix(data1['y'])
-    # print('dataSize:', X.shape)
-    # m = X.shape[0]
-    # print('m', m)
-    # data2 = sio.loadmat('ex4weights.mat')
-    # theta_1 = data2['Theta1']
-    # theta_2 = data2['Theta2']
-    #
-    # image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
-    # # image.show()
-    #
-    # input_layer_size = 400
-    # hidden_layer_size = 25
-    # out_layer_size = 10
-    #
-    # J, grad = costFunction(X, y, np.r_[theta_1.ravel().T, theta_2.ravel().T], input_layer_size, hidden_layer_size,
-    #                        out_layer_size, m, lmd=0)
+    gradient = checkGradient(1)
+    print('梯度检验成功' if gradient else '梯度检验失败')
+
+    data1 = sio.loadmat('ex4data1.mat')
+    X = np.matrix(data1['X'])
+    y = np.matrix(data1['y'])
+    print('dataSize:', X.shape)
+    m = X.shape[0]
+    print('m', m)
+    data2 = sio.loadmat('ex4weights.mat')
+    theta_1 = data2['Theta1']
+    theta_2 = data2['Theta2']
+    theta = np.r_[theta_1.ravel().T, theta_2.ravel().T]
+
+    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
+    # image.show()
+
+    input_layer_size = 400
+    hidden_layer_size = 25
+    out_layer_size = 10
+
+    J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+                           out_layer_size, m, lmd=1)
     # print(J)
     # print(grad)
-    checkGradient(1)
+    rate = 0.001
+    trainTimes = 1000
+    for i in range(trainTimes):
+        J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+                               out_layer_size, m, lmd=1)
+        print('J', J)
+        theta -= rate * grad
+
+    print(theta)
