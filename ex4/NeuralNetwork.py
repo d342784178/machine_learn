@@ -27,9 +27,9 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
         Y[ii, y[ii, 0] - 1] = 1
     # 向前推导
     theta_1 = np.matrix(theta[0:hidden_layer_size * (input_layer_size + 1)]).reshape(
-            hidden_layer_size, (input_layer_size + 1))
+        hidden_layer_size, (input_layer_size + 1))
     theta_2 = np.matrix(theta[hidden_layer_size * (input_layer_size + 1)::]).reshape(
-            out_layer_size, (hidden_layer_size + 1))
+        out_layer_size, (hidden_layer_size + 1))
 
     a1 = X
     a2 = sigmoid(np.c_[np.ones([m, 1]), a1].dot(theta_1.T))
@@ -56,7 +56,7 @@ def costFunction(X, y, theta, input_layer_size, hidden_layer_size, out_layer_siz
         Delta_2 += delta_3.dot(a_2.T)
         Delta_1 += delta_2.dot(a_1.T)
 
-    #TODO 梯度有问题
+    # TODO 梯度有问题
     Telta_1_temp = np.c_[np.ones([theta_1.shape[0], 1]), theta_1[:, 1::]]
     Telta_2_temp = np.c_[np.ones([theta_2.shape[0], 1]), theta_2[:, 1::]]
     J_grad_1 = 1 / m * Delta_1 + lmd / m * Telta_1_temp
@@ -87,7 +87,7 @@ def checkGradient(lmd):
     Theta1 = initTheta(input_layer_size, hidden_layer_size)
     Theta2 = initTheta(hidden_layer_size, out_layer_size)
     X = debugInitWeight(m, input_layer_size)
-    y = debugInitWeight(m, out_layer_size)
+    y = (np.ones([m, 1]) * out_layer_size).astype('int32')
     # costFunc = cost(X, y, Theta1, Theta2, input_layer_size, hidden_layer_size, out_layer_size, m, lmd)
     theta = np.r_[Theta1.ravel().T, Theta2.ravel().T]
 
@@ -116,25 +116,25 @@ def checkGradient(lmd):
 
 
 if __name__ == '__main__':
-    data1 = sio.loadmat('ex4data1.mat')
-    X = np.matrix(data1['X'])
-    y = np.matrix(data1['y'])
-    print('dataSize:', X.shape)
-    m = X.shape[0]
-    print('m', m)
-    data2 = sio.loadmat('ex4weights.mat')
-    theta_1 = data2['Theta1']
-    theta_2 = data2['Theta2']
-
-    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
-    # image.show()
-
-    input_layer_size = 400
-    hidden_layer_size = 25
-    out_layer_size = 10
-
-    J, grad = costFunction(X, y, np.r_[theta_1.ravel().T, theta_2.ravel().T], input_layer_size, hidden_layer_size,
-                           out_layer_size, m, lmd=0)
-    print(J)
-    print(grad)
+    # data1 = sio.loadmat('ex4data1.mat')
+    # X = np.matrix(data1['X'])
+    # y = np.matrix(data1['y'])
+    # print('dataSize:', X.shape)
+    # m = X.shape[0]
+    # print('m', m)
+    # data2 = sio.loadmat('ex4weights.mat')
+    # theta_1 = data2['Theta1']
+    # theta_2 = data2['Theta2']
+    #
+    # image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
+    # # image.show()
+    #
+    # input_layer_size = 400
+    # hidden_layer_size = 25
+    # out_layer_size = 10
+    #
+    # J, grad = costFunction(X, y, np.r_[theta_1.ravel().T, theta_2.ravel().T], input_layer_size, hidden_layer_size,
+    #                        out_layer_size, m, lmd=0)
+    # print(J)
+    # print(grad)
     checkGradient(1)
