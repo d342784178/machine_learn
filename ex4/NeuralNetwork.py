@@ -151,11 +151,17 @@ def predict(X, y, theta, input_layer_size, hidden_layer_size, out_layer_size, m,
     a1 = X
     a2 = sigmoid(np.c_[np.ones([m, 1]), a1].dot(theta_1.T))
     a3 = sigmoid(np.c_[np.ones([m, 1]), a2].dot(theta_2.T))
-    return np.where(a3 > 0.5)[1] + 1
+    # return np.where(a3 > 0.5)[1] + 1
+    a3[a3 > 0.5] = 1
+    a3[a3 < 0.5] = 0
+    delta = a3 - Y
+    return np.where(delta > 0)[0]
 
 
 def checkResult(X, y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd):
-    pass
+    total = 5000
+    result = predict(X[0:total, :], y, theta, input_layer_size, hidden_layer_size, out_layer_size, m=total, lmd=1)
+    print('准确性', 1 - result.shape[0] * 1.0 / total, '%')
 
 
 if __name__ == '__main__':
@@ -182,28 +188,21 @@ if __name__ == '__main__':
         theta_2 = initTheta(hidden_layer_size, out_layer_size)
         theta = np.matrix(np.r_[theta_1.ravel(), theta_2.ravel()])
 
-    image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
+    # image = img.fromarray(X[1000, :].reshape(20, 20).T * 255)
     # image.show()
-
 
     # J, grad, result = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
     #                                out_layer_size, m, lmd=1)
     # print(J)
     # print(grad)
 
-    # rate = 1
-    # trainTimes = 5000
-    # for i in range(trainTimes):
-    #     J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
-    #                            out_layer_size, m, lmd=1)
-    #     print('J', J)
-    #     theta -= rate * grad
-    #     sio.savemat('./theta.mat', {'theat': theta})
-    # print(theta)
-    # sio.savemat('./theta.mat', {'theat': theta})
-
-    # image = img.fromarray(X[0:1000, :].reshape(20, 20).T * 255)
-    # image.show()
-    result = predict(X[0:50, :], y, theta, input_layer_size, hidden_layer_size, out_layer_size, m=50, lmd=1)
-    print(result)
-    # print(np.matrix(result).T - y[0:1000, :])
+    rate = 1
+    trainTimes = 5000
+    for i in range(trainTimes):
+        J, grad = costFunction(X, y, theta, input_layer_size, hidden_layer_size,
+                               out_layer_size, m, lmd=1)
+        print('J', J)
+        theta -= rate * grad
+        sio.savemat('./theta.mat', {'theat': theta})
+    print(theta)
+    sio.savemat('./theta.mat', {'theat': theta})
