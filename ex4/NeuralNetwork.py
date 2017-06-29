@@ -161,7 +161,7 @@ def predict(X, y, theta, input_layer_size, hidden_layer_size, out_layer_size, m,
 def checkResult(X, y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd):
     total = 5000
     result = predict(X[0:total, :], y, theta, input_layer_size, hidden_layer_size, out_layer_size, m=total, lmd=1)
-    print('准确性', 1 - result.shape[0] * 1.0 / total, '%')
+    print('准确性', (1 - result.shape[0] * 1.0 / total) * 100, '%')
 
 
 if __name__ == '__main__':
@@ -206,3 +206,5 @@ if __name__ == '__main__':
         sio.savemat('./theta.mat', {'theat': theta})
     print(theta)
     sio.savemat('./theta.mat', {'theat': theta})
+
+    # checkResult(X, y, theta, input_layer_size, hidden_layer_size, out_layer_size, m, lmd=1)
